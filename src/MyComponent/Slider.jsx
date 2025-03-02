@@ -1,8 +1,7 @@
 import React, { useEffect } from "react";
-import { useMovies } from "@/context/MovieContext"; // ✅ Import context
+import { useMovies } from "../Context/MovieContext"; // ✅ Import context
 import MyCarousel from "./MyCarousel";
-import Carousel_info from "./Carousel_info";
-import { api_key } from "../Services/GlobalApi";
+
 
 const Slider = ({ trending }) => {
   const { 
