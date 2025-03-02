@@ -28,7 +28,7 @@ const Carousel_info = ({ apikeys, MovieList }) => {
 
             {/* Information Button */}
             <Button variant="amazon" size="round_md">
-              <IoMdInformationCircleOutline size="4xl" />
+              <IoMdInformationCircleOutline  />
             </Button>
           </div>
         </div>

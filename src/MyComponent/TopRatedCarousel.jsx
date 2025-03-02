@@ -1,15 +1,22 @@
 import React, { useEffect, useState, useRef } from "react";
+import { useNavigate } from "react-router-dom"; // ✅ Import useNavigate
 import GlobalApi from "@/Services/GlobalApi";
-import { movieBaseUrl } from "@/Services/GlobalApi";
+import { movieBaseUrl, api_key } from "@/Services/GlobalApi";
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
-import { FaPlus } from "react-icons/fa";
+import { FaPlus, FaCheck } from "react-icons/fa6";
 import { IoMdInformationCircleOutline } from "react-icons/io";
 import { Button } from "@/components/ui/button";
+import { useWishlist } from "@/Context/WishlistContext";
+import axios from "axios";
+import TrailerModal from "./TrailerModal"; // ✅ Import reusable modal
 
 const TopRatedSlider = ({ mediaType = "movie" }) => {
   const [items, setItems] = useState([]);
   const [hoveredItem, setHoveredItem] = useState(null);
+  const [trailerKey, setTrailerKey] = useState(null);
   const containerRef = useRef(null);
+  const { wishlist, addToWishlist } = useWishlist();
+  const navigate = useNavigate(); // ✅ React Router Navigation
 
   useEffect(() => {
     const fetchTopRated = async () => {
@@ -40,6 +47,32 @@ const TopRatedSlider = ({ mediaType = "movie" }) => {
     }
   };
 
+  // ✅ Fetch Trailer & Show in Modal
+  const playTrailer = async (movieId) => {
+    try {
+      const response = await axios.get(
+        `https://api.themoviedb.org/3/${mediaType}/${movieId}/videos?api_key=${api_key}`
+      );
+      const trailers = response.data.results;
+      const officialTrailer = trailers.find(
+        (video) => video.type === "Trailer" && video.site === "YouTube"
+      );
+
+      if (officialTrailer) {
+        setTrailerKey(officialTrailer.key);
+      } else {
+        alert("No trailer available!");
+      }
+    } catch (error) {
+      console.error("Error fetching trailer:", error);
+    }
+  };
+
+  // ✅ Navigate to Movie Details Page
+  const goToMovieDetails = (movieId) => {
+    navigate(`/movie/${movieId}`);
+  };
+
   return (
     <div className="space-y-6 relative">
       <h2 className="text-xl font-bold text-white mb-3">
@@ -59,58 +92,78 @@ const TopRatedSlider = ({ mediaType = "movie" }) => {
         ref={containerRef}
         className="flex gap-4 overflow-x-scroll scrollbar-hide scroll-smooth px-10"
       >
-        {items.map((item) => (
-          <div
-            key={item.id}
-            className={`relative h-[450px] flex-shrink-0 rounded-lg overflow-hidden transition-all duration-500 ease-in-out ${
-              hoveredItem === item.id ? "w-[800px] z-10" : "w-[300px] scale-100"
-            }`}
-            onMouseEnter={() => setHoveredItem(item.id)}
-            onMouseLeave={() => setHoveredItem(null)}
-            style={{
-              backgroundImage:
-                hoveredItem === item.id
-                  ? `url(${movieBaseUrl}${item.backdrop_path})`
-                  : "none",
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-            }}
-          >
-            {/* ✅ Movie Poster */}
-            <img
-              src={`${movieBaseUrl}${item.poster_path}`}
-              alt={item.title || item.name}
-              className={`w-full h-full object-cover transition-all duration-500 ${
-                hoveredItem === item.id ? "opacity-0" : "opacity-100"
-              }`}
-            />
+        {items.map((item) => {
+          const isInWishlist = wishlist.some((movie) => movie.movie_id === item.id);
 
-            {/* ✅ Buttons (Slide Up on Hover) */}
+          return (
             <div
-              className={`absolute bottom-4 left-2 flex  gap-4 items-start transition-all duration-500 ease-in-out ${
-                hoveredItem === item.id
-                  ? "opacity-100 translate-y-0 pointer-events-auto"
-                  : "opacity-0 translate-y-6 pointer-events-none"
+              key={item.id}
+              className={`relative h-[450px] flex-shrink-0 rounded-lg overflow-hidden transition-all duration-500 ease-in-out ${
+                hoveredItem === item.id ? "w-[800px] z-10" : "w-[300px] scale-100"
               }`}
+              onMouseEnter={() => setHoveredItem(item.id)}
+              onMouseLeave={() => setHoveredItem(null)}
+              style={{
+                backgroundImage:
+                  hoveredItem === item.id
+                    ? `url(${movieBaseUrl}${item.backdrop_path})`
+                    : "none",
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }}
             >
-              {/* Episode Button */}
-              <Button className="hover:bg-white hover:text-black flex flex-col items-center justify-center w-40 h-20 text-xl font-semibold bg-gray-700 text-white rounded-lg transition">
-                <span>Episode 1</span>
-                <span className="text-sm">Watch Now</span>
-              </Button>
+              {/* ✅ Movie Poster */}
+              <img
+                src={`${movieBaseUrl}${item.poster_path}`}
+                alt={item.title || item.name}
+                className={`w-full h-full object-cover transition-all duration-500 ${
+                  hoveredItem === item.id ? "opacity-0" : "opacity-100"
+                }`}
+              />
 
-              {/* Icons */}
-              <div className="flex items-center gap-5">
-                <Button variant="amazon" size="round_md">
-                  <FaPlus className="text-3xl" />
+              {/* ✅ Buttons (Slide Up on Hover) */}
+              <div
+                className={`absolute bottom-4 left-2 flex gap-4 items-start transition-all duration-500 ease-in-out ${
+                  hoveredItem === item.id
+                    ? "opacity-100 translate-y-0 pointer-events-auto"
+                    : "opacity-0 translate-y-6 pointer-events-none"
+                }`}
+              >
+                {/* ✅ Play Trailer Button */}
+                <Button
+                  className="hover:bg-white hover:text-black flex flex-col items-center justify-center w-40 h-20 text-xl font-semibold bg-gray-700 text-white rounded-lg transition"
+                  onClick={() => playTrailer(item.id)}
+                >
+                  <span>Play</span>
                 </Button>
-                <Button variant="amazon" size="round_md">
-                  <IoMdInformationCircleOutline size="4xl" />
-                </Button>
+
+                {/* ✅ Wishlist & Info Buttons */}
+                <div className="flex items-center gap-5">
+                  <Button
+                    variant="amazon"
+                    size="round_md"
+                    onClick={() => addToWishlist(item)}
+                  >
+                    {isInWishlist ? (
+                      <FaCheck className="text-3xl text-green-500" />
+                    ) : (
+                      <FaPlus className="text-3xl" />
+                    )}
+                  </Button>
+
+                  {/* ✅ Info Button (Navigate to Movie Details Page) */}
+                  <Button
+                    variant="amazon"
+                    size="round_md"
+                    onClick={() => goToMovieDetails(item.id)}
+                  >
+                    <IoMdInformationCircleOutline />
+                  </Button>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* ✅ Right Arrow */}
@@ -120,6 +173,9 @@ const TopRatedSlider = ({ mediaType = "movie" }) => {
       >
         <IoIosArrowForward size={30} />
       </button>
+
+      {/* ✅ Reusable Trailer Modal */}
+      <TrailerModal trailerKey={trailerKey} onClose={() => setTrailerKey(null)} />
     </div>
   );
 };

@@ -1,23 +1,29 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { menu1, menu2 } from "../data/Moviedata";
 import SearchBar from "./SearchBar";
+
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  SignedIn,
+  SignedOut,
+  SignInButton,
+  UserButton,
+} from "@clerk/clerk-react";
 
 const Header = () => {
   const [showSearch, setShowSearch] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
-  const [activetab, setactivetab] = useState("Home")
-
-const handleactivetab=(name)=>
-   {
+  const [activetab, setactivetab] = useState("Home");
+  const navigate = useNavigate();
+  const handleactivetab = (name) => {
     setactivetab(name);
-   }
+  };
 
   const handleClick = (action) => {
     if (action === "search") {
@@ -27,7 +33,8 @@ const handleactivetab=(name)=>
     } else if (action === "menu") {
       setShowMenu(!showMenu); // ✅ Toggle Menu
     } else if (action === "bookmark") {
-      console.log("Bookmark Clicked!"); // ✅ Bookmark Action
+      navigate("/wishlist");
+      // ✅ Bookmark Action
     } else if (action === "settings") {
       console.log("Opening Settings..."); // ✅ Open Settings
     }
@@ -46,10 +53,12 @@ const handleactivetab=(name)=>
               <div className="flex gap-2">
                 {menu1.map((item, index) => (
                   <Link
-                  onClick={()=>handleactivetab(item.name)}
+                    onClick={() => handleactivetab(item.name)}
                     key={index}
                     to={item.path}
-                    className={`relative px-4 py-2 ${activetab==item.name?"bg-gray-700":""}  cursor-pointer transition duration-300 hover:bg-white hover:text-black rounded-md`}
+                    className={`relative px-4 py-2 ${
+                      activetab == item.name ? "bg-gray-700" : ""
+                    }  cursor-pointer transition duration-300 hover:bg-white hover:text-black rounded-md`}
                   >
                     {item.name}
                   </Link>
@@ -70,8 +79,13 @@ const handleactivetab=(name)=>
                       <Tooltip>
                         <TooltipTrigger
                           key={index}
-                          onClick={() => handleClick(item.action)}
-                          className="p-2 rounded-full cursor-pointer hover:bg-white hover:text-black transition duration-300"
+                          onClick={() => {
+                            handleClick(item.action);
+                            handleactivetab(item.action);
+                          }}
+                          className={`p-2 rounded-full cursor-pointer ${
+                            activetab === item.action ? "bg-gray-700" : ""
+                          } hover:bg-white hover:text-black transition duration-300`}
                         >
                           <IconComponent />
                         </TooltipTrigger>
@@ -86,8 +100,16 @@ const handleactivetab=(name)=>
             </div>
 
             {/* Clerk Section */}
-            <div className="text-white font-semibold px-4 py-2 bg-gray-800 rounded-md hover:bg-gray-600 transition">
-              CLERK
+            <div className="flex items-center space-x-4">
+              {/* ✅ Show Sign-In Button if User is Signed Out */}
+              <SignedOut>
+                <SignInButton />
+              </SignedOut>
+
+              {/* ✅ Show User Profile Button if Signed In */}
+              <SignedIn>
+                <UserButton />
+              </SignedIn>
             </div>
           </div>
         </div>

@@ -30,18 +30,22 @@ const Slider = ({ trending }) => {
 
   // ✅ Select the correct movie list
   let MovieList = [];
+  let display="";
   if (trending === "trendingall") {
     MovieList = trendingVideos;
+    display=" ";
   } else if (trending === "trendingmovies") {
     MovieList = trendingMovies;
+    display="Movies";
   } else if (trending === "trendingtv") {
     MovieList = trendingTVShows;
+    display="Series";
   }
 
   return (
     <div className="w-full h-[600px] bg-slate-700 relative">
-      <MyCarousel MovieList={MovieList} id={MovieList?.id} />
-      <Carousel_info apikeys={api_key} MovieList={MovieList} />
+      <MyCarousel MovieList={MovieList} id={MovieList?.id} display={display}/>
+      
     </div>
   );
 };
