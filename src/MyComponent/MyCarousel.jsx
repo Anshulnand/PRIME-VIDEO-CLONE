@@ -1,38 +1,40 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Flickity from "react-flickity-component";
-import "flickity/css/flickity.css";
 import axios from "axios";
 import { movieBaseUrl, api_key } from "../Services/GlobalApi";
-import { Button } from "@/components/ui/button";
-import { FaPlus, FaCheck } from "react-icons/fa6";
+import { FaPlus, FaCheck, FaArrowRight, FaArrowLeft } from "react-icons/fa6";
 import { IoMdInformationCircleOutline } from "react-icons/io";
 import { useWishlist } from "@/Context/WishlistContext";
-
-// ✅ Flickity Options
-const flickityOptions = {
-  wrapAround: true,
-  autoPlay: 3000,
-  pauseAutoPlayOnHover: true,
-  contain: true,
-  prevNextButtons: true,
-  pageDots: true,
-  draggable: true,
-  cellAlign: "center",
-  selectedAttraction: 0.01,
-  friction: 0.15,
-  freeScroll: false,
-  adaptiveHeight: true,
-};
 
 const MyCarousel = ({ MovieList, display }) => {
   const { wishlist, addToWishlist } = useWishlist();
   const [trailerKey, setTrailerKey] = useState(null);
   const [playingTrailer, setPlayingTrailer] = useState(null);
-  const [trailerAvailable, setTrailerAvailable] = useState(true);
   const navigate = useNavigate();
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
 
-  // ✅ Fetch trailer when Play button is clicked
+  // ✅ Auto-scroll every 3 seconds (Stops on hover)
+  useEffect(() => {
+    if (isHovered) return;
+    
+    const interval = setInterval(() => {
+      setCurrentIndex((prevIndex) => (prevIndex + 1) % MovieList.length);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [MovieList, isHovered]);
+
+  // ✅ Manual Navigation
+  const nextSlide = () => {
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % MovieList.length);
+  };
+
+  const prevSlide = () => {
+    setCurrentIndex((prevIndex) => (prevIndex - 1 + MovieList.length) % MovieList.length);
+  };
+
+  // ✅ Fetch Trailer on Click
   const fetchTrailerOnClick = async (movieId) => {
     try {
       const response = await axios.get(
@@ -46,14 +48,11 @@ const MyCarousel = ({ MovieList, display }) => {
       if (officialTrailer) {
         setTrailerKey(officialTrailer.key);
         setPlayingTrailer(movieId);
-        setTrailerAvailable(true);
       } else {
-        setTrailerAvailable(false);
         alert("Trailer not available for this movie.");
       }
     } catch (error) {
       console.error("Error fetching trailer:", error);
-      setTrailerAvailable(false);
       alert("Trailer not available for this movie.");
     }
   };
@@ -64,19 +63,20 @@ const MyCarousel = ({ MovieList, display }) => {
   };
 
   return (
-    <div className="relative w-full mx-auto overflow-hidden">
-      <Flickity options={flickityOptions} className="carousel">
+    <div
+      className="relative w-full mx-auto overflow-hidden"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {/* ✅ Carousel Content */}
+      <div className="relative w-full h-[600px] transition-transform duration-500 ease-in-out flex"
+        style={{ transform: `translateX(-${currentIndex * 100}%)` }}>
         {MovieList.length > 0 ? (
-          MovieList.map((item) => {
-            const isInWishlist = wishlist.some(
-              (movie) => movie.movie_id === item.id
-            );
+          MovieList.map((item, index) => {
+            const isInWishlist = wishlist.some((movie) => movie.movie_id === item.id);
 
             return (
-              <div
-                key={item.id}
-                className="carousel-cell w-full h-[600px] flex items-center justify-center relative"
-              >
+              <div key={item.id} className="w-full flex-shrink-0 relative">
                 {/* ✅ Play Trailer Inside Image */}
                 <div className="relative w-full h-full bg-cover bg-center rounded-lg">
                   {playingTrailer === item.id && trailerKey ? (
@@ -89,9 +89,7 @@ const MyCarousel = ({ MovieList, display }) => {
                   ) : (
                     <div
                       className="w-full h-full bg-cover bg-center rounded-lg"
-                      style={{
-                        backgroundImage: `url(${movieBaseUrl}${item.backdrop_path})`,
-                      }}
+                      style={{ backgroundImage: `url(${movieBaseUrl}${item.backdrop_path})` }}
                     ></div>
                   )}
                 </div>
@@ -101,43 +99,27 @@ const MyCarousel = ({ MovieList, display }) => {
                   <>
                     {/* ✅ Movie Info */}
                     <div className="absolute bottom-32 left-0 w-full p-5 rounded-b-lg">
-                      <h2 className="text-white text-xl font-semibold">
-                        {item.title || item.name || display}
-                      </h2>
-                      <p className="text-white text-sm">
-                        {item.overview?.slice(0, 100)}...
-                      </p>
+                      <h2 className="text-white text-xl font-semibold">{item.title || item.name || display}</h2>
+                      <p className="text-white text-sm">{item.overview?.slice(0, 100)}...</p>
                     </div>
 
                     {/* ✅ Buttons */}
                     <div className="absolute bottom-10 left-6 flex gap-5">
-                      <Button
-                        className="hover:bg-white hover:text-black flex flex-col items-center justify-center w-40 h-16 text-xl font-semibold bg-gray-700 text-white rounded-lg transition"
+                      <button
+                        className="bg-gray-700 text-white text-xl font-semibold w-40 h-16 rounded-lg transition hover:bg-white hover:text-black"
                         onClick={() => fetchTrailerOnClick(item.id)}
                       >
-                        <span> Play</span>
-                      </Button>
+                        Play
+                      </button>
 
-                      <Button
-                        variant="amazon"
-                        size="round_md"
-                        onClick={() => addToWishlist(item)}
-                      >
-                        {isInWishlist ? (
-                          <FaCheck className="text-3xl text-green-500" />
-                        ) : (
-                          <FaPlus className="text-3xl" />
-                        )}
-                      </Button>
+                      <button onClick={() => addToWishlist(item)} className="p-3 bg-gray-700 text-white rounded-full">
+                        {isInWishlist ? <FaCheck className="text-3xl text-green-500" /> : <FaPlus className="text-3xl" />}
+                      </button>
 
                       {/* ✅ Navigate to Movie Details Page */}
-                      <Button
-                        variant="amazon"
-                        size="round_md"
-                        onClick={() => goToMovieDetails(item.id)}
-                      >
+                      <button onClick={() => goToMovieDetails(item.id)} className="p-3 bg-gray-700 text-white rounded-full">
                         <IoMdInformationCircleOutline size={28} />
-                      </Button>
+                      </button>
                     </div>
                   </>
                 )}
@@ -145,25 +127,24 @@ const MyCarousel = ({ MovieList, display }) => {
             );
           })
         ) : (
-          <div className="carousel-cell text-white text-center">
-            No Movies Found
-          </div>
+          <div className="text-white text-center w-full">No Movies Found</div>
         )}
-      </Flickity>
+      </div>
 
-      {/* ✅ Fix Page Dots Styling */}
-      <style>
-        {`
-          .flickity-page-dots {
-            bottom: 10px;
-          }
-          .flickity-page-dots .dot {
-            background: white;
-            width: 10px;
-            height: 10px;
-          }
-        `}
-      </style>
+      {/* ✅ Navigation Buttons */}
+      <button
+        onClick={prevSlide}
+        className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/50 p-2 rounded-full cursor-pointer"
+      >
+        <FaArrowLeft className="text-white text-2xl" />
+      </button>
+
+      <button
+        onClick={nextSlide}
+        className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/50 p-2 rounded-full cursor-pointer"
+      >
+        <FaArrowRight className="text-white text-2xl" />
+      </button>
     </div>
   );
 };
