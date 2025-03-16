@@ -1,8 +1,12 @@
   import GenreList from '@/MyComponent/GenreList'
   import Slider from '@/MyComponent/Slider'
-  import React from 'react'
+  import React, { useEffect } from 'react'
   import { tvPage } from '@/data/Moviedata'
   const MoviesPage = () => {
+    useEffect(() => {
+      window.scrollTo(0, 0); // ✅ Scrolls to the top when page loads
+    }, []);
+  
     return (
     <>
     <Slider trending="trendingtv"></Slider>

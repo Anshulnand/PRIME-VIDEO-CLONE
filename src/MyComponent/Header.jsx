@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { menu1, menu2 } from "../data/Moviedata";
 import SearchBar from "./SearchBar";
-
+import { IoIosMenu } from "react-icons/io";
 import {
   Tooltip,
   TooltipContent,
@@ -20,11 +20,14 @@ const Header = () => {
   const [showSearch, setShowSearch] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [activetab, setactivetab] = useState("Home");
+  const [showMenuTab, setShowMenuTab] = useState(false);
   const navigate = useNavigate();
   const handleactivetab = (name) => {
     setactivetab(name);
   };
-
+  const menutab = () => {
+    setShowMenuTab(!showMenuTab);
+  };
   const handleClick = (action) => {
     if (action === "search") {
       setShowSearch(true); // ✅ Open Search Bar
@@ -42,23 +45,44 @@ const Header = () => {
 
   return (
     <>
-      <div className="bg-slate-800 bg-opacity-90 fixed w-full backdrop-blur-sm z-50 text-white font-semibold">
-        <div className="flex justify-between px-8 items-center py-4">
+      <div className="bg-[rgb(30,39,46)] bg-opacity-90 fixed w-full backdrop-blur-sm z-50 text-white font-semibold">
+        <div className="flex justify-between px-4 md:px-8 lg:px-12 items-center py-4">
           {/* Logo & Navigation */}
-          <div className="flex gap-6 items-center">
-            <div className="text-xl font-bold">Prime Video</div>
+          <div className="flex md:hidden text-2xl" onClick={menutab}>
+            <IoIosMenu></IoIosMenu>
+          </div>
+          {showMenuTab && (
+            <div className="bg-[rgb(40,50,60)]  absolute top-12 rounded-sm left-0 w-[120px]  shadow-lg">
+              <ul className="text-white">
+                {menu1.map((item, index) => (
+                  <Link to ={item.path} key={index}>
+                <li
+                    key={index}
+                    className="px-4 py-2 hover:bg-white hover:text-black transition"
+                  >
+                    {item.name}
+                  </li>
+                  </Link>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          <div className="flex gap-6   items-center">
+            <div className="text-base md:text-xl mx-2 font-bold">Prime Video</div>
 
             <div className="flex gap-4">
               {/* Navigation Links */}
-              <div className="flex gap-2">
+              <div className="hidden md:flex gap-2">
                 {menu1.map((item, index) => (
                   <Link
                     onClick={() => handleactivetab(item.name)}
                     key={index}
                     to={item.path}
                     className={`relative px-4 py-2 ${
-                      activetab == item.name ? "bg-gray-700" : ""
-                    }  cursor-pointer transition duration-300 hover:bg-white hover:text-black rounded-md`}
+                      activetab == item.name ? "bg-gray-700 border-[1px] " : ""
+                    }   hover:bg-white hover:text-black hover:scale-105 hover:shadow-[0_0_15px_rgba(255,255,255,0.6)] 
+            transition-all duration-300 ease-in-out rounded-md`}
                   >
                     {item.name}
                   </Link>
@@ -84,8 +108,11 @@ const Header = () => {
                             handleactivetab(item.action);
                           }}
                           className={`p-2 rounded-full cursor-pointer ${
-                            activetab === item.action ? "bg-gray-700" : ""
-                          } hover:bg-white hover:text-black transition duration-300`}
+                            activetab === item.action
+                              ? "bg-gray-700 border-[1px]"
+                              : ""
+                          } hover:bg-white hover:text-black hover:scale-105 hover:shadow-[0_0_15px_rgba(255,255,255,0.6)] 
+          transition-all duration-300 ease-in-out rounded-full`}
                         >
                           <IconComponent />
                         </TooltipTrigger>

@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { movieBaseUrl, api_key } from "../Services/GlobalApi";
 import { FaPlus, FaCheck, FaArrowRight, FaArrowLeft } from "react-icons/fa6";
 import { IoMdInformationCircleOutline } from "react-icons/io";
 import { useWishlist } from "@/Context/WishlistContext";
+import { Button } from "@/components/ui/button";
 
 const MyCarousel = ({ MovieList, display }) => {
   const { wishlist, addToWishlist } = useWishlist();
@@ -13,25 +14,30 @@ const MyCarousel = ({ MovieList, display }) => {
   const navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
+  const intervalRef = useRef(null);
 
-  // ✅ Auto-scroll every 3 seconds (Stops on hover)
+  // ✅ Auto-scroll every 6 seconds (Stops when trailer is playing)
   useEffect(() => {
-    if (isHovered) return;
-    
-    const interval = setInterval(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % MovieList.length);
-    }, 3000);
+    if (!isHovered && !playingTrailer) {
+      intervalRef.current = setInterval(() => {
+        nextSlide();
+      }, 2000);
+    }
+    return () => clearInterval(intervalRef.current);
+  }, [isHovered, playingTrailer]);
 
-    return () => clearInterval(interval);
-  }, [MovieList, isHovered]);
-
-  // ✅ Manual Navigation
+  // ✅ Next and Previous Slide Handlers (Now Works Even When Trailer is Playing)
   const nextSlide = () => {
-    setCurrentIndex((prevIndex) => (prevIndex + 1) % MovieList.length);
+    const newIndex = (currentIndex + 1) % MovieList.length;
+    setCurrentIndex(newIndex);
+    setPlayingTrailer(null); // Close the trailer when switching movies
   };
 
   const prevSlide = () => {
-    setCurrentIndex((prevIndex) => (prevIndex - 1 + MovieList.length) % MovieList.length);
+    const newIndex =
+      (currentIndex - 1 + MovieList.length) % MovieList.length;
+    setCurrentIndex(newIndex);
+    setPlayingTrailer(null); // Close the trailer when switching movies
   };
 
   // ✅ Fetch Trailer on Click
@@ -57,6 +63,12 @@ const MyCarousel = ({ MovieList, display }) => {
     }
   };
 
+  // ✅ Stop Trailer and Resume Auto-scroll
+  const stopTrailer = () => {
+    setPlayingTrailer(null);
+    setTrailerKey(null);
+  };
+
   // ✅ Navigate to Movie Details Page
   const goToMovieDetails = (movieId) => {
     navigate(`/movie/${movieId}`);
@@ -68,60 +80,93 @@ const MyCarousel = ({ MovieList, display }) => {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* ✅ Carousel Content */}
-      <div className="relative w-full h-[600px] transition-transform duration-500 ease-in-out flex"
-        style={{ transform: `translateX(-${currentIndex * 100}%)` }}>
+      {/* ✅ Carousel Content (One Movie at a Time) */}
+      <div
+        className="relative w-full flex transition-transform duration-500 ease-in-out"
+        style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+      >
         {MovieList.length > 0 ? (
           MovieList.map((item, index) => {
-            const isInWishlist = wishlist.some((movie) => movie.movie_id === item.id);
+            const isInWishlist = wishlist.some(
+              (movie) => movie.movie_id === item.id
+            );
 
             return (
-              <div key={item.id} className="w-full flex-shrink-0 relative">
-                {/* ✅ Play Trailer Inside Image */}
-                <div className="relative w-full h-full bg-cover bg-center rounded-lg">
+              <div
+                key={item.id}
+                className="relative flex-shrink-0 w-full transition-transform duration-300 ease-in-out"
+              >
+                {/* ✅ Movie Poster or Trailer */}
+                <div className="relative w-full h-[400px] md:h-[500px] lg:h-[680px] bg-cover bg-center rounded-lg">
                   {playingTrailer === item.id && trailerKey ? (
-                    <iframe
-                      className="w-full h-full rounded-lg"
-                      src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1&mute=1`}
-                      title="YouTube video player"
-                      allowFullScreen
-                    ></iframe>
+                    <div className="relative w-full h-full">
+                      <iframe
+                        className="w-full h-full rounded-lg"
+                        src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1&mute=1`}
+                        title="YouTube video player"
+                        allowFullScreen
+                      ></iframe>
+
+                      {/* ✅ Stop Trailer Button */}
+                      <button
+                        onClick={stopTrailer}
+                        className="absolute top-4 right-4 bg-red-600 text-white px-4 py-2 rounded-md"
+                      >
+                        Close Trailer
+                      </button>
+                    </div>
                   ) : (
                     <div
                       className="w-full h-full bg-cover bg-center rounded-lg"
-                      style={{ backgroundImage: `url(${movieBaseUrl}${item.backdrop_path})` }}
-                    ></div>
+                      style={{
+                        backgroundImage: `url(${movieBaseUrl}${item.backdrop_path})`,
+                      }}
+                    >
+                      {/* ✅ Fade-to-Black Effect */}
+                      <div className="absolute bottom-0 left-0 w-full h-40 bg-gradient-to-t from-black to-transparent"></div>
+                    </div>
                   )}
                 </div>
 
-                {/* ✅ Hide Info & Buttons When Trailer Plays */}
-                {playingTrailer !== item.id && (
-                  <>
-                    {/* ✅ Movie Info */}
-                    <div className="absolute bottom-32 left-0 w-full p-5 rounded-b-lg">
-                      <h2 className="text-white text-xl font-semibold">{item.title || item.name || display}</h2>
-                      <p className="text-white text-sm">{item.overview?.slice(0, 100)}...</p>
-                    </div>
+                {/* ✅ Hide Info & Buttons When Trailer is Playing */}
+                {!playingTrailer && (
+                  <div className="absolute bottom-10 md:left-6 w-full p-5 rounded-lg z-10">
+                    <h2 className="text-white md:text-xl  font-semibold">
+                      {item.title || item.name || display}
+                    </h2>
+                    <p className="text-white text-xs  md:text-sm">{item.overview?.slice(0, 100)}...</p>
 
                     {/* ✅ Buttons */}
-                    <div className="absolute bottom-10 left-6 flex gap-5">
-                      <button
-                        className="bg-gray-700 text-white text-xl font-semibold w-40 h-16 rounded-lg transition hover:bg-white hover:text-black"
+                    <div className="flex gap-4 mt-3">
+                      <Button
+                        variant="amazon"
+                        size="square_md"
                         onClick={() => fetchTrailerOnClick(item.id)}
                       >
                         Play
-                      </button>
+                      </Button>
 
-                      <button onClick={() => addToWishlist(item)} className="p-3 bg-gray-700 text-white rounded-full">
-                        {isInWishlist ? <FaCheck className="text-3xl text-green-500" /> : <FaPlus className="text-3xl" />}
-                      </button>
+                      <Button
+                        variant="amazon"
+                        size="round_md"
+                        onClick={() => addToWishlist(item)}
+                      >
+                        {isInWishlist ? (
+                          <FaCheck className="text-3xl text-green-500" />
+                        ) : (
+                          <FaPlus className="text-3xl" />
+                        )}
+                      </Button>
 
-                      {/* ✅ Navigate to Movie Details Page */}
-                      <button onClick={() => goToMovieDetails(item.id)} className="p-3 bg-gray-700 text-white rounded-full">
+                      <Button
+                        variant="amazon"
+                        size="round_md"
+                        onClick={() => goToMovieDetails(item.id)}
+                      >
                         <IoMdInformationCircleOutline size={28} />
-                      </button>
+                      </Button>
                     </div>
-                  </>
+                  </div>
                 )}
               </div>
             );
@@ -131,19 +176,19 @@ const MyCarousel = ({ MovieList, display }) => {
         )}
       </div>
 
-      {/* ✅ Navigation Buttons */}
+      {/* ✅ Navigation Buttons (Always Visible) */}
       <button
         onClick={prevSlide}
-        className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/50 p-2 rounded-full cursor-pointer"
+        className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/50 p-3 rounded-full cursor-pointer z-20"
       >
-        <FaArrowLeft className="text-white text-2xl" />
+        <FaArrowLeft className="text-white  md:text-3xl" />
       </button>
 
       <button
         onClick={nextSlide}
-        className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/50 p-2 rounded-full cursor-pointer"
+        className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/50 p-3 rounded-full cursor-pointer z-20"
       >
-        <FaArrowRight className="text-white text-2xl" />
+        <FaArrowRight className="text-white md:text-3xl" />
       </button>
     </div>
   );

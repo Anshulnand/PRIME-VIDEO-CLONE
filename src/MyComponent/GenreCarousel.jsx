@@ -74,7 +74,10 @@ const GenreCarousel = ({ genres, mediaType }) => {
     <div className="space-y-8">
       {genres.map((genre, genreIndex) => (
         <React.Fragment key={genre.id}>
-          {genreIndex % 3 === 0 && <TopRatedCarousel mediaType={mediaType} />}
+        {genreIndex % 3 === 0 && (
+  <TopRatedCarousel mediaType={mediaType} uniqueKey={genreIndex} />
+)}
+
 
           <div>
             <h2 className="text-xl font-bold text-white mb-3">
@@ -123,7 +126,7 @@ const GenreCarousel = ({ genres, mediaType }) => {
                                       {/* ✅ Play Trailer Button */}
                                       <Button
                                         variant="amazon"
-                                        className="h-10 w-16 rounded-md"
+                                      size="square_sm"
                                         onClick={() => playTrailer(item.id)}
                                       >
                                         Play

@@ -71,8 +71,8 @@ const menu1 = [
 ];
 const menu2 = [
   { icon: IoIosSearch, action:"search" },
-  { icon: GoDownload, action:"download" },
-  { icon: PiDotsNineBold, action:"menu" },
+  //{ icon: GoDownload, action:"download" },
+  //{ icon: PiDotsNineBold, action:"menu" },
   { icon: FaRegBookmark, action:"bookmark" },
   { icon: IoIosSettings, action:"setting" },
 ];

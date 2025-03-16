@@ -54,7 +54,7 @@ const SearchBar = ({ onClose }) => {
     <div className="fixed inset-0 flex justify-center items-start bg-black bg-opacity-20 p-6 z-50">
       <div
         ref={searchBarRef}
-        className="w-full max-w-4xl bg-gray-900 text-white p-3 rounded-lg shadow-lg border border-gray-700"
+        className="w-full max-w-4xl bg-[rgb(30,39,46)] text-white p-3 rounded-lg shadow-lg border border-gray-700"
       >
         <div className="flex items-center gap-2">
           {/* 🔍 Search Icon (Click to Search) */}

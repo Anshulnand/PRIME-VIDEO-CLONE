@@ -42,7 +42,7 @@ const Slider = ({ trending }) => {
   }
 
   return (
-    <div className="w-full h-[600px] bg-slate-700 relative">
+    <div className="w-full sm:h-[400px] md:h-[670px] bg-slate-700 relative">
       <MyCarousel MovieList={MovieList} id={MovieList?.id} display={display}/>
       
     </div>

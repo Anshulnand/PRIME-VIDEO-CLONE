@@ -21,15 +21,17 @@ const buttonVariants = cva(
 
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
-       amazon:"flex items-center justify-center  bg-gray-700 text-white hover:bg-white hover:text-black hover:scale-110 transition shadow-md",
+       amazon:"flex items-center justify-center hover:shadow-[0_0_15px_rgba(255,255,255,0.6)] transition-all duration-300 ease-in-out bg-[rgb(47,54,64)] text-white hover:bg-white hover:text-black hover:scale-110 transition shadow-md",
       },
       size: {
         default: "h-9 px-4 py-2",
         sm: "h-8 rounded-md px-3 text-xs",
         lg: "h-10 rounded-md px-8",
         icon: "h-9 w-9",
-        round_md:"w-16 h-16 rounded-full",
-        round_sm:"w-10 h-10 rounded-full"
+        round_md:"w-10 h-10 md:w-16 md:h-16 rounded-full",
+        round_sm:"w-10 h-10 rounded-full",
+        square_md:" w-20 h-10 md:w-40 md:h-16 rounded-lg md:text-xl",
+         square_sm:"w-16 h-10 rounded-md "
       },
     },
     defaultVariants: {
