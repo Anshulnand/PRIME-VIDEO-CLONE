@@ -46,30 +46,33 @@ const Header = () => {
   return (
     <>
       <div className="bg-[rgb(30,39,46)] bg-opacity-90 fixed w-full backdrop-blur-sm z-50 text-white font-semibold">
-        <div className="flex justify-between px-4 md:px-8 lg:px-12 items-center py-4">
+        <div className="flex justify-between px-4 md:px-8 lg:px-12 items-center py-2 md:py-4">
           {/* Logo & Navigation */}
           <div className="flex md:hidden text-2xl" onClick={menutab}>
             <IoIosMenu></IoIosMenu>
           </div>
           {showMenuTab && (
-            <div className="bg-[rgb(40,50,60)]  absolute top-12 rounded-sm left-0 w-[120px]  shadow-lg">
+            <div className="bg-[rgb(40,50,60)]  absolute top-[51px] rounded-sm left-2 w-[120px]  shadow-lg">
               <ul className="text-white">
                 {menu1.map((item, index) => (
-                  <Link to ={item.path} key={index}>
-                <li
-                    key={index}
-                    className="px-4 py-2 hover:bg-white hover:text-black transition"
-                  >
-                    {item.name}
-                  </li>
+                  <Link to={item.path} key={index}>
+                    <li
+                      key={index}
+                      className="px-4 py-2 hover:bg-white hover:text-black transition"
+                    >
+                      {item.name}
+                    </li>
                   </Link>
                 ))}
               </ul>
             </div>
           )}
 
-          <div className="flex gap-6   items-center">
-            <div className="text-base md:text-xl mx-2 font-bold">Prime Video</div>
+          <div className="flex  md:gap-6  items-center">
+            <div className="text-base md:text-xl mx-2 font-bold">
+             <Link to={"/home"} >     Prime Video</Link>
+         
+            </div>
 
             <div className="flex gap-4">
               {/* Navigation Links */}

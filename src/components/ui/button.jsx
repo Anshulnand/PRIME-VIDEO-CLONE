@@ -31,7 +31,8 @@ const buttonVariants = cva(
         round_md:"w-10 h-10 md:w-16 md:h-16 rounded-full",
         round_sm:"w-10 h-10 rounded-full",
         square_md:" w-20 h-10 md:w-40 md:h-16 rounded-lg md:text-xl",
-         square_sm:"w-16 h-10 rounded-md "
+         square_sm:"w-16 h-10 rounded-md ",
+           Genre:"w-16 h-10 md:w-40 md:h-16 rounded-lg md:text-xl"
       },
     },
     defaultVariants: {

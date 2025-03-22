@@ -7,7 +7,7 @@ import { IoMdInformationCircleOutline } from "react-icons/io";
 import { useWishlist } from "@/Context/WishlistContext";
 import { Button } from "@/components/ui/button";
 
-const MyCarousel = ({ MovieList, display }) => {
+const MyCarousel = ({ MovieList, mediaType = "movie", display }) => {
   const { wishlist, addToWishlist } = useWishlist();
   const [trailerKey, setTrailerKey] = useState(null);
   const [playingTrailer, setPlayingTrailer] = useState(null);
@@ -26,25 +26,24 @@ const MyCarousel = ({ MovieList, display }) => {
     return () => clearInterval(intervalRef.current);
   }, [isHovered, playingTrailer]);
 
-  // ✅ Next and Previous Slide Handlers (Now Works Even When Trailer is Playing)
+  // ✅ Next and Previous Slide Handlers
   const nextSlide = () => {
-    const newIndex = (currentIndex + 1) % MovieList.length;
-    setCurrentIndex(newIndex);
-    setPlayingTrailer(null); // Close the trailer when switching movies
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % MovieList.length);
+    setPlayingTrailer(null);
   };
 
   const prevSlide = () => {
-    const newIndex =
-      (currentIndex - 1 + MovieList.length) % MovieList.length;
-    setCurrentIndex(newIndex);
-    setPlayingTrailer(null); // Close the trailer when switching movies
+    setCurrentIndex(
+      (prevIndex) => (prevIndex - 1 + MovieList.length) % MovieList.length
+    );
+    setPlayingTrailer(null);
   };
 
-  // ✅ Fetch Trailer on Click
-  const fetchTrailerOnClick = async (movieId) => {
+  // ✅ Fetch Trailer On Click (Supports Both Movies & TV Shows)
+  const fetchTrailerOnClick = async (itemId, type) => {
     try {
       const response = await axios.get(
-        `https://api.themoviedb.org/3/movie/${movieId}/videos?api_key=${api_key}`
+        `https://api.themoviedb.org/3/${type}/${itemId}/videos?api_key=${api_key}`
       );
       const trailers = response.data.results;
       const officialTrailer = trailers.find(
@@ -53,25 +52,25 @@ const MyCarousel = ({ MovieList, display }) => {
 
       if (officialTrailer) {
         setTrailerKey(officialTrailer.key);
-        setPlayingTrailer(movieId);
+        setPlayingTrailer(itemId);
       } else {
-        alert("Trailer not available for this movie.");
+        alert("Trailer not available.");
       }
     } catch (error) {
       console.error("Error fetching trailer:", error);
-      alert("Trailer not available for this movie.");
+      alert("Trailer not available.");
     }
   };
 
-  // ✅ Stop Trailer and Resume Auto-scroll
+  // ✅ Stop Trailer
   const stopTrailer = () => {
     setPlayingTrailer(null);
     setTrailerKey(null);
   };
 
-  // ✅ Navigate to Movie Details Page
-  const goToMovieDetails = (movieId) => {
-    navigate(`/movie/${movieId}`);
+  // ✅ Navigate to Movie/TV Show Details Page
+  const goToDetails = (itemId, type) => {
+    navigate(`/${type}/${itemId}`);
   };
 
   return (
@@ -80,7 +79,7 @@ const MyCarousel = ({ MovieList, display }) => {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* ✅ Carousel Content (One Movie at a Time) */}
+      {/* ✅ Carousel Content (One Item at a Time) */}
       <div
         className="relative w-full flex transition-transform duration-500 ease-in-out"
         style={{ transform: `translateX(-${currentIndex * 100}%)` }}
@@ -131,17 +130,21 @@ const MyCarousel = ({ MovieList, display }) => {
                 {/* ✅ Hide Info & Buttons When Trailer is Playing */}
                 {!playingTrailer && (
                   <div className="absolute bottom-10 md:left-6 w-full p-5 rounded-lg z-10">
-                    <h2 className="text-white md:text-xl  font-semibold">
+                    <h2 className="text-white md:text-xl font-semibold">
                       {item.title || item.name || display}
                     </h2>
-                    <p className="text-white text-xs  md:text-sm">{item.overview?.slice(0, 100)}...</p>
+                    <p className="text-white text-xs md:text-sm">
+                      {item.overview?.slice(0, 100)}...
+                    </p>
 
                     {/* ✅ Buttons */}
                     <div className="flex gap-4 mt-3">
                       <Button
                         variant="amazon"
                         size="square_md"
-                        onClick={() => fetchTrailerOnClick(item.id)}
+                        onClick={() =>
+                          fetchTrailerOnClick(item.id, item.media_type || mediaType)
+                        }
                       >
                         Play
                       </Button>
@@ -161,9 +164,9 @@ const MyCarousel = ({ MovieList, display }) => {
                       <Button
                         variant="amazon"
                         size="round_md"
-                        onClick={() => goToMovieDetails(item.id)}
+                        onClick={() => goToDetails(item.id, item.media_type || mediaType)}
                       >
-                        <IoMdInformationCircleOutline size={28} />
+                        <IoMdInformationCircleOutline />
                       </Button>
                     </div>
                   </div>
@@ -172,16 +175,16 @@ const MyCarousel = ({ MovieList, display }) => {
             );
           })
         ) : (
-          <div className="text-white text-center w-full">No Movies Found</div>
+          <div className="text-white text-center w-full">No Items Found</div>
         )}
       </div>
 
-      {/* ✅ Navigation Buttons (Always Visible) */}
+      {/* ✅ Navigation Buttons */}
       <button
         onClick={prevSlide}
         className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/50 p-3 rounded-full cursor-pointer z-20"
       >
-        <FaArrowLeft className="text-white  md:text-3xl" />
+        <FaArrowLeft className="text-white md:text-3xl" />
       </button>
 
       <button

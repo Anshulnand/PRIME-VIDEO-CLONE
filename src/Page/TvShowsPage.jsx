@@ -2,7 +2,7 @@
   import Slider from '@/MyComponent/Slider'
   import React, { useEffect } from 'react'
   import { tvPage } from '@/data/Moviedata'
-  const MoviesPage = () => {
+  const TvShowsPage = () => {
     useEffect(() => {
       window.scrollTo(0, 0); // ✅ Scrolls to the top when page loads
     }, []);
@@ -15,4 +15,4 @@
     )
   }
 
-  export default MoviesPage
+  export default TvShowsPage
