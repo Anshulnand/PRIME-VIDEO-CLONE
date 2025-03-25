@@ -87,12 +87,12 @@ const GenreCarousel = ({ genres, mediaType }) => {
                           src={`https://image.tmdb.org/t/p/w1280${item.backdrop_path}`}
                           alt={item.title || item.name}
                           className="w-full h-full object-cover rounded-lg transition-all duration-500 ease-in-out group-hover:brightness-50"
-                        />
+                        />  
 
                         {/* Hover overlay */}
                         {hoveredMovie === item.id && (
                           <div
-                            className="absolute inset-0 flex items-center justify-center gap-2"
+                            className="absolute inset-0 flex items-center justify-center gap-2 hover:transition-all hover:ease-in-out hover:duration-150"
                             onClick={(e) => e.stopPropagation()}
                           >
                             {/* Play button (visible on all screens) */}

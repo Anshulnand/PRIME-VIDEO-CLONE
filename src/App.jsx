@@ -1,5 +1,10 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useLocation,
+} from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion"; // ✅ Import Framer Motion
 import Header from "./MyComponent/Header";
 import MoviesPage from "./Page/MoviesPage";
@@ -11,6 +16,7 @@ import { ClerkProvider } from "@clerk/clerk-react";
 import { WishlistProvider } from "./Context/WishlistContext";
 import WishlistPage from "./Page/WishlistPage";
 import MovieDetails from "./Page/MovieDetails";
+import TVShowDetailPage from "./Page/TVShowDetailPage";
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
@@ -30,7 +36,10 @@ const AnimatedRoutes = () => {
           <Route path="/" element={<Home />} />
           <Route path="/home" element={<Home />} />
           <Route path="/movies" element={<MoviesPage />} />
+
           <Route path="/tv-shows" element={<TvShowsPage />} />
+          <Route path="/tv/:id" element={<TVShowDetailPage />} />
+
           <Route path="/search/:query" element={<SearchResultsPage />} />
           <Route path="/wishlist" element={<WishlistPage />} />
           <Route path="/movie/:id" element={<MovieDetails />} />

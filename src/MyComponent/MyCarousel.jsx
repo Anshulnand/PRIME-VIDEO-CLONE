@@ -16,7 +16,7 @@ const MyCarousel = ({ MovieList, mediaType = "movie", display }) => {
   const [isHovered, setIsHovered] = useState(false);
   const intervalRef = useRef(null);
 
-  // ✅ Auto-scroll every 6 seconds (Stops when trailer is playing)
+  // ✅ Auto-scroll every 2 seconds (Stops when trailer is playing)
   useEffect(() => {
     if (!isHovered && !playingTrailer) {
       intervalRef.current = setInterval(() => {
@@ -39,7 +39,7 @@ const MyCarousel = ({ MovieList, mediaType = "movie", display }) => {
     setPlayingTrailer(null);
   };
 
-  // ✅ Fetch Trailer On Click (Supports Both Movies & TV Shows)
+  // ✅ Fetch Trailer (Supports Both Movies & TV Shows)
   const fetchTrailerOnClick = async (itemId, type) => {
     try {
       const response = await axios.get(
@@ -70,8 +70,11 @@ const MyCarousel = ({ MovieList, mediaType = "movie", display }) => {
 
   // ✅ Navigate to Movie/TV Show Details Page
   const goToDetails = (itemId, type) => {
-    navigate(`/${type}/${itemId}`);
+    const correctType = type || mediaType; // Ensure correct media type
+    navigate(`/${correctType}/${itemId}`);
   };
+  
+  
 
   return (
     <div
@@ -85,10 +88,9 @@ const MyCarousel = ({ MovieList, mediaType = "movie", display }) => {
         style={{ transform: `translateX(-${currentIndex * 100}%)` }}
       >
         {MovieList.length > 0 ? (
-          MovieList.map((item, index) => {
-            const isInWishlist = wishlist.some(
-              (movie) => movie.movie_id === item.id
-            );
+          MovieList.map((item) => {
+            const isInWishlist = wishlist.some((movie) => movie.id === item.id);
+            const itemType = item.media_type || mediaType || "movie";
 
             return (
               <div
@@ -142,9 +144,7 @@ const MyCarousel = ({ MovieList, mediaType = "movie", display }) => {
                       <Button
                         variant="amazon"
                         size="square_md"
-                        onClick={() =>
-                          fetchTrailerOnClick(item.id, item.media_type || mediaType)
-                        }
+                        onClick={() => fetchTrailerOnClick(item.id, itemType)}
                       >
                         Play
                       </Button>
@@ -164,7 +164,7 @@ const MyCarousel = ({ MovieList, mediaType = "movie", display }) => {
                       <Button
                         variant="amazon"
                         size="round_md"
-                        onClick={() => goToDetails(item.id, item.media_type || mediaType)}
+                        onClick={() => goToDetails(item.id, itemType)}
                       >
                         <IoMdInformationCircleOutline />
                       </Button>

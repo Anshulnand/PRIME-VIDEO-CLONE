@@ -40,6 +40,7 @@ const Slider = ({ trending }) => {
     MovieList = trendingTVShows;
     display="Series";
   }
+  console.log("TV Shows Data: ", trendingTVShows);
 
   return (
     <div className="w-full sm:h-[400px] md:h-[670px] bg-slate-700 relative">

@@ -52,7 +52,9 @@ const TopRatedSlider = ({ mediaType = "movie", uniqueKey }) => {
     }
   };
 
-  const goToMovieDetails = (movieId) => navigate(`/movie/${movieId}`);
+  const goToDetails = (id) => {
+    navigate(mediaType === "tv" ? `/tv/${id}` : `/movie/${id}`);
+  };
 
   return (
     <div className="space-y-6 mt-10 relative">
@@ -75,7 +77,9 @@ const TopRatedSlider = ({ mediaType = "movie", uniqueKey }) => {
           <div
             key={item.id}
             className={`relative h-[450px] flex-shrink-0 rounded-lg overflow-hidden transition-all duration-500 ease-in-out ${
-              hoveredItem === item.id ? "md:w-[800px] z-10" : "md:w-[300px] scale-100"
+              hoveredItem === item.id
+                ? "md:w-[800px] z-10"
+                : "md:w-[300px] scale-100"
             }`}
             onMouseEnter={() => setHoveredItem(item.id)}
             onMouseLeave={() => setHoveredItem(null)}
@@ -90,15 +94,19 @@ const TopRatedSlider = ({ mediaType = "movie", uniqueKey }) => {
           >
             <img
               src={`${movieBaseUrl}${item.poster_path}`}
-              alt={item.title || item.name}
+              alt={item.name || item.title} // ✅ Ensures TV shows display correctly
               className={`w-full h-full object-cover transition-all duration-500 ${
-                hoveredItem === item.id && window.innerWidth >= 768 ? "opacity-0" : "opacity-100"
+                hoveredItem === item.id && window.innerWidth >= 768
+                  ? "opacity-0"
+                  : "opacity-100"
               }`}
             />
 
             <div
               className={`absolute bottom-10 left-2 flex gap-4 items-center transition-all duration-500 ease-in-out ${
-                hoveredItem === item.id || window.innerWidth < 640 ? "opacity-100" : "opacity-0"
+                hoveredItem === item.id || window.innerWidth < 640
+                  ? "opacity-100"
+                  : "opacity-0"
               }`}
             >
               <Button
@@ -114,7 +122,7 @@ const TopRatedSlider = ({ mediaType = "movie", uniqueKey }) => {
               <Button
                 variant="amazon"
                 size="round_md"
-                onClick={() => goToMovieDetails(item.id)}
+                onClick={() => goToDetails(item.id)}
               >
                 <IoMdInformationCircleOutline />
               </Button>

@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useUser } from '@clerk/clerk-react';  // Clerk hook to get the current user
-import { supabase } from '../Services/supabaseClient';  // Supabase client
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { useUser } from "@clerk/clerk-react"; // Clerk authentication hook
+import { supabase } from "../Services/supabaseClient"; // Supabase instance
 
 // Create WishlistContext
 const WishlistContext = createContext();
@@ -10,84 +10,98 @@ export const useWishlist = () => {
   return useContext(WishlistContext);
 };
 
-// WishlistProvider component to fetch and provide the wishlist data
+// WishlistProvider component
 export const WishlistProvider = ({ children }) => {
-  const { user } = useUser();  // Get user data from Clerk
-  const [wishlist, setWishlist] = useState([]);  // State to store the wishlist
-  const [loading, setLoading] = useState(true);  // State for loading status
-  const [error, setError] = useState(null);  // State for error messages
+  const { user } = useUser(); // Get current user from Clerk
+  const [wishlist, setWishlist] = useState([]); // State to store wishlist items
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchWishlist = async () => {
-      if (!user) return;  // Exit if no user is logged in
+  // ✅ Fetch wishlist from Supabase
+  const fetchWishlist = async () => {
+    if (!user) return;
 
-      try {
-        setLoading(true);
-        const { data, error } = await supabase
-          .from('wishlist_movies')  // Supabase table where movie details are stored
-          .select('*')  // Select all columns
-          .eq('user_id', user.id);  // Filter by the logged-in user's ID
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("wishlist_movies")
+        .select("*")
+        .eq("user_id", user.id);
 
-        if (error) throw error;  // Handle any errors
-        setWishlist(data);  // Set the wishlist data from Supabase
-      } catch (err) {
-        setError('Error fetching wishlist.');
-        console.error('Error fetching wishlist:', err);
-      } finally {
-        setLoading(false);  // Set loading to false once data is fetched
-      }
-    };
-
-    fetchWishlist();  // Fetch wishlist when the user is available
-  }, [user]);  // Run effect whenever the user changes
-
-
-
-
-  const removeFromWishlist = (movieId) => {
-    setWishlist((prev) => prev.filter((movie) => movie.movie_id !== movieId));
+      if (error) throw error;
+      setWishlist(data); // ✅ Store fetched wishlist
+    } catch (err) {
+      setError("Error fetching wishlist.");
+      console.error("Error fetching wishlist:", err);
+    } finally {
+      setLoading(false);
+    }
   };
-  
 
-  // Function to add a movie to the wishlist
+  // 🔄 Fetch wishlist on user login
+  useEffect(() => {
+    fetchWishlist();
+  }, [user]);
+
+  // ✅ Add to wishlist
   const addToWishlist = async (movie) => {
     if (!user) {
       alert("Please sign in first.");
       return;
     }
-  
-    // ✅ Check if movie is already in wishlist
+
     const isInWishlist = wishlist.some((m) => m.movie_id === movie.id);
     if (isInWishlist) {
       console.log("Movie is already in wishlist!");
       return;
     }
-  
+
     try {
-      // ✅ Add movie to Supabase
+      // Add movie to Supabase
       const { error } = await supabase.from("wishlist_movies").insert([
         {
           user_id: user.id,
           movie_id: movie.id,
-          title: movie.title,
+          title: movie.title || movie.name,
           poster_path: movie.poster_path,
-          release_date: movie.release_date,
+          release_date: movie.release_date || movie.first_air_date,
           overview: movie.overview,
-          genre: movie.genres,
+          genre: JSON.stringify(movie.genres),
         },
       ]);
-  
+
       if (error) throw error;
-  
-      // ✅ Update the wishlist **immediately**
+
+      // ✅ Update state immediately
       setWishlist((prev) => [...prev, { ...movie, movie_id: movie.id }]);
-  
+
       console.log("Movie added to wishlist");
     } catch (error) {
       console.error("Error adding movie to wishlist:", error);
     }
   };
-  
+
+  // ✅ Remove from wishlist (Supabase & UI update)
+  const removeFromWishlist = async (movieId) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from("wishlist_movies")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("movie_id", movieId);
+
+      if (error) throw error;
+
+      // ✅ Update state immediately
+      setWishlist((prev) => prev.filter((movie) => movie.movie_id !== movieId));
+
+      console.log("Movie removed from wishlist");
+    } catch (error) {
+      console.error("Error removing movie from wishlist:", error);
+    }
+  };
 
   return (
     <WishlistContext.Provider value={{ wishlist, loading, error, addToWishlist, removeFromWishlist }}>
