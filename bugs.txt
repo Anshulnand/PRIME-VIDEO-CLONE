@@ -5,4 +5,4 @@ bugs:
 - extra download button for no reason 
 - extra setting button for no reason
 - in genrecaraousel it needs a wishlisht button too
-- 
+- when in mobile mode and playing yt video from the slider carousel the close button is not properly aligned and gets hidden
