@@ -153,7 +153,3 @@ Here's a breakdown of the folder structure and what each folder/file contains:
 - **Clerk**: For simplifying user authentication and management.
 - **Supabase**: For backend-as-a-service and real-time database functionality.
 - **Tailwind CSS**: For enabling quick and easy styling with a mobile-first approach.
-
----
-
-Let me know if you need any more adjustments! 🚀
