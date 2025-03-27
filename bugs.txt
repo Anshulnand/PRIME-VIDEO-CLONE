@@ -1,6 +1,7 @@
 bugs:
 - in searched page the info doesnt work 
 - mobile view for wishlist is not appealing and remove button can be clicked while trying to click on poster
+- when not logged in wishlist alignment is wrong messes with the header
 - wishlist doesnt work in info movie or tv
 - extra download button for no reason 
 - extra setting button for no reason
